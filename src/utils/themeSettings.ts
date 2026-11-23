@@ -192,6 +192,11 @@ export interface ResolvedThemeSettings {
   homepageDefaultPingTaskId: number;
   enableHomepageMultiPing: boolean;
   homepageMultiPingTaskIds: number[];
+  /**
+   * 多线模式不看 `homepageMultiPingTaskIds` 的槽位顺序，直接显示这台节点**实际有数据**的全部线路
+   * （最多 8 条）。V4 + V6 六网就是六行，不用先数好槽位。
+   */
+  homepageMultiPingAllLines: boolean;
   /** 首页延迟的图形：点阵或曲线（见 HomepagePingStyle）。 */
   homepagePingStyle: HomepagePingStyle;
   homepagePingLineOverrides: PingLineOverridesByNode;
@@ -263,6 +268,7 @@ export const DEFAULT_THEME_SETTINGS: ResolvedThemeSettings = {
   homepageDefaultPingTaskId: DEFAULT_HOMEPAGE_PING_TASK_ID,
   enableHomepageMultiPing: true,
   homepageMultiPingTaskIds: [...DEFAULT_HOMEPAGE_MULTI_PING_TASK_IDS],
+  homepageMultiPingAllLines: false,
   homepagePingStyle: "bars",
   homepagePingLineOverrides: EMPTY_PING_LINE_OVERRIDES_BY_NODE,
   fakePingForUnbound: false,
@@ -581,6 +587,7 @@ export function normalizeThemeSettings(
     ),
     enableHomepageMultiPing: enabledUnlessFalse(settings?.enableHomepageMultiPing),
     homepageMultiPingTaskIds,
+    homepageMultiPingAllLines: settings?.homepageMultiPingAllLines === true,
     homepagePingStyle: settings?.homepagePingStyle === "line" ? "line" : "bars",
     homepagePingLineOverrides: normalizePingLineOverridesByNode(settings?.homepagePingLineOverrides),
     fakePingForUnbound: settings?.fakePingForUnbound === true,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { listAvailablePingTaskIds } from "@/hooks/usePingOverview";
 import type { PingLiveSample } from "@/services/pingLiveStore";
 import { EMPTY_CARRIER_PING } from "@/types/cfsm";
+import { resolveHomepageMultiPingBaseTaskIds } from "@/utils/pingTasks";
 import {
   EMPTY_PING_LINE_OVERRIDES,
   EMPTY_PING_LINE_OVERRIDES_BY_NODE,
@@ -117,6 +118,21 @@ describe("listAvailablePingTaskIds", () => {
     const samples = [sample(1, { ct: 30 })];
     expect(listAvailablePingTaskIds(samples)).toBe(listAvailablePingTaskIds(samples));
     expect(listAvailablePingTaskIds([])).toEqual([]);
+  });
+
+  it("feeds a six-route node (V4 + V6) into the auto line layout", () => {
+    // 后端把电信 / 联通 / 移动的 V4 与 V6 配成六条探测线路时，后两条通常挂在 node_1 / node_2 槽位上。
+    const samples = [
+      sample(1, { ct: 30, cu: 41, cm: 52, bd: 33, node_1: 44, node_2: 55 }),
+    ];
+    const available = listAvailablePingTaskIds(samples);
+    expect(available).toEqual([1, 2, 3, 4, 5, 6]);
+    // 自动模式不看三网槽位：六条有数据的线路就是六行。
+    expect(resolveHomepageMultiPingBaseTaskIds([1, 2, 3], available, true)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+    // 关掉自动仍是原来的三网三行。
+    expect(resolveHomepageMultiPingBaseTaskIds([1, 2, 3], available, false)).toEqual([1, 2, 3]);
   });
 });
 

@@ -556,6 +556,11 @@ export interface ThemeSettings {
   homepageDefaultPingTaskId?: number;
   enableHomepageMultiPing?: boolean;
   homepageMultiPingTaskIds?: number[];
+  /**
+   * 多线模式下忽略槽位列表，按这台节点实际有数据的线路自动出行数（V4 + V6 六网就是六行）。
+   * 没写 = false，存量站点的三网行数与顺序保持不变。
+   */
+  homepageMultiPingAllLines?: boolean;
   /** 首页延迟的图形：点阵（bars，默认）或曲线（line）。 */
   homepagePingStyle?: HomepagePingStyle;
   /** 站长在卡片上换好、「保存到后端」写上来的逐节点换线：`{ uuid: { 行号: 线路 id } }`。 */

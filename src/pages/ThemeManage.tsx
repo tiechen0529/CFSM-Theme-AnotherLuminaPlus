@@ -421,6 +421,7 @@ function pickManagedThemeSettings(settings: ResolvedThemeSettings) {
     homepageDefaultPingTaskId: settings.homepageDefaultPingTaskId,
     enableHomepageMultiPing: settings.enableHomepageMultiPing,
     homepageMultiPingTaskIds: settings.homepageMultiPingTaskIds,
+    homepageMultiPingAllLines: settings.homepageMultiPingAllLines,
     homepagePingStyle: settings.homepagePingStyle,
     fakePingForUnbound: settings.fakePingForUnbound,
     pingLatencyThresholds: normalizePingLatencyThresholds(settings.pingLatencyThresholds),
@@ -1509,6 +1510,7 @@ export function ThemeManage() {
     draft.costRateApiUrl.trim() !== "" && !isCostRateApiUrlValid(draft.costRateApiUrl.trim());
   const draftMultiPingInvalid =
     draft.enableHomepageMultiPing &&
+    !draft.homepageMultiPingAllLines &&
     !isHomepageMultiPingConfigured(draft.homepageMultiPingTaskIds);
 
   const setRatingLabelDraft = useCallback((key: "bandwidth" | "asset", value: string) => {
@@ -2510,6 +2512,26 @@ export function ThemeManage() {
                   </div>
 
                   {draft.enableHomepageMultiPing ? (
+                    <>
+                      <ToggleRow
+                        field="homepageMultiPingAllLines"
+                        title={t("自动显示全部线路")}
+                        desc={t(
+                          "不按下面的槽位列表，直接展示每台节点实际有数据的每一条线路（最多 8 条）。后端把 V4 与 V6 配成六条探测线路后，首页卡片就是六行，六网一次看全。",
+                        )}
+                        checked={draft.homepageMultiPingAllLines}
+                        onPatch={patch}
+                      />
+                      {draft.homepageMultiPingAllLines ? (
+                        <div className="surface-inset flex flex-col gap-2 px-4 py-3">
+                          <span className="setting-subhead-title">{t("行数与顺序")}</span>
+                          <p className="setting-hint">
+                            {t(
+                              "自动模式下每台节点按自己的线路出行数：六条探测线路就是六行，三条就是三行。线路名和探测目标仍由后端后台的探测线路决定；下面手动排的槽位会保留，关掉自动后照旧生效。",
+                            )}
+                          </p>
+                        </div>
+                      ) : (
                     <div className="surface-inset flex flex-col gap-3 px-4 py-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -2562,6 +2584,8 @@ export function ThemeManage() {
                         ))}
                       </div>
                     </div>
+                      )}
+                    </>
                   ) : (
                     <div className="flex flex-col gap-4">
                       <div className="surface-inset flex flex-col gap-2 px-4 py-3">

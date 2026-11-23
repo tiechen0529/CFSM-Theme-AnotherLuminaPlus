@@ -12,6 +12,7 @@ import {
   normalizeHomepagePingTaskBindings,
   resolveHomepagePingSelections,
   resolveHomepagePingTaskIdsByClient,
+  resolveHomepageMultiPingBaseTaskIds,
 } from "@/utils/pingTasks";
 
 describe("homepage ping task bindings", () => {
@@ -175,6 +176,32 @@ describe("homepage ping task bindings", () => {
     expect(singleSelections.multiTaskIdsByClient).toEqual(new Map());
     expect(singleSelections.requestedTaskIdsByClient).toBe(
       singleSelections.singleTaskIdsByClient,
+    );
+  });
+});
+
+describe("homepage multi-ping base task ids", () => {
+  it("keeps the configured slots when auto mode is off", () => {
+    expect(resolveHomepageMultiPingBaseTaskIds([1, 2, 3], [1, 2, 3, 4, 5, 6], false)).toEqual([
+      1, 2, 3,
+    ]);
+  });
+
+  it("uses every route with data when auto mode is on (V4 + V6 six routes)", () => {
+    expect(resolveHomepageMultiPingBaseTaskIds([1, 2, 3], [1, 2, 3, 4, 5, 6], true)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+  });
+
+  it("falls back to the configured slots until the first samples arrive", () => {
+    // 还没样本时列个空表出来，会把整块延迟区画成空白；先按槽位占位，收到样本再换。
+    expect(resolveHomepageMultiPingBaseTaskIds([1, 2, 3], [], true)).toEqual([1, 2, 3]);
+  });
+
+  it("caps the auto list at the multi-ping maximum", () => {
+    const ids = Array.from({ length: HOMEPAGE_MULTI_PING_MAX_COUNT + 3 }, (_, i) => i + 1);
+    expect(resolveHomepageMultiPingBaseTaskIds([1], ids, true)).toHaveLength(
+      HOMEPAGE_MULTI_PING_MAX_COUNT,
     );
   });
 });

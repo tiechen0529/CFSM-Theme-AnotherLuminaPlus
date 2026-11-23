@@ -718,6 +718,12 @@ export const EN: Record<string, string> = {
   "点阵：每格一种颜色；曲线：平滑折线，延迟、丢包各按当前值取色（多线模式下丢包显示为数字）。大卡、小卡、迷你卡与列表都会跟着切换。":
     "Dots: one colored cell per time slot. Line: smooth curves colored by the current latency and packet loss (in multi-route mode, loss is shown as a number). Applies to large, small and mini cards and to the list.",
   "多线槽位": "Route slots",
+  "自动显示全部线路": "Auto-show every route",
+  "不按下面的槽位列表，直接展示每台节点实际有数据的每一条线路（最多 8 条）。后端把 V4 与 V6 配成六条探测线路后，首页卡片就是六行，六网一次看全。":
+    "Ignore the slot list below and show every route this server actually has data for (up to 8). Once the backend probes six routes (V4 and V6), the home card shows six rows.",
+  "行数与顺序": "Row count and order",
+  "自动模式下每台节点按自己的线路出行数：六条探测线路就是六行，三条就是三行。线路名和探测目标仍由后端后台的探测线路决定；下面手动排的槽位会保留，关掉自动后照旧生效。":
+    "In auto mode each server shows as many rows as it has routes: six probed routes means six rows, three means three. Route names and probe targets still come from the backend; the manual slots below are kept and apply again once auto mode is off.",
   "卡片将依序展示各线路的实时延迟光柱。": "Cards show live latency bars for each route in order.",
   "+ 添加展示线路": "+ Add route",
   "槽位 #{n}": "Slot #{n}",

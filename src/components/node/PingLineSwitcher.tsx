@@ -12,15 +12,14 @@ import { createPortal } from "react-dom";
 import { Check, RotateCcw } from "lucide-react";
 import {
   useAvailablePingTaskIds,
+  useNodeDefaultMultiPingTaskIds,
   useNodePingLineOverrides,
 } from "@/hooks/usePingOverview";
 import { useCarrierNames } from "@/hooks/usePublicConfig";
-import { useThemeSettings } from "@/hooks/useThemeSettings";
 import { CARRIER_TASKS, carrierTaskName } from "@/services/cfsm/mappers";
 import { setPingLineOverrides } from "@/services/pingLineOverrideStore";
 import {
   EMPTY_PING_LINE_OVERRIDES,
-  nodePingLineOverrides,
   resolveNodePingLineTaskIds,
   switchPingLine,
 } from "@/utils/pingLineOverrides";
@@ -103,15 +102,13 @@ function PingLineMenu({
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const { homepageMultiPingTaskIds, homepagePingLineOverrides } = useThemeSettings();
   const overrides = useNodePingLineOverrides(uuid);
   const available = useAvailablePingTaskIds(uuid);
   const carrierNames = useCarrierNames();
-  // 这台节点的「默认」= 站点线路表 + 站长存到后端的逐节点换线；本机换的行相对它记，「恢复默认」也回到它。
-  const nodeDefault = resolveNodePingLineTaskIds(
-    homepageMultiPingTaskIds,
-    nodePingLineOverrides(homepagePingLineOverrides, uuid),
-  );
+  // 这台节点的「默认」= 站点线路表（自动全部线路时是这台节点有数据的那些线路）+ 站长存到后端的
+  // 逐节点换线；本机换的行相对它记，「恢复默认」也回到它。和卡片共用同一个 hook，别再自己拼一份 ——
+  // 自动模式下两边拼出来的行数不一样，就会出现「行上写着电信、菜单里选中联通」。
+  const nodeDefault = useNodeDefaultMultiPingTaskIds(uuid);
   const displayed = resolveNodePingLineTaskIds(nodeDefault, overrides);
   const currentTaskId = displayed[slot];
   // 有数据的线路才列（后端对没配探测目标的槽位下发 false，换过去只会是一行「无样本」）；

@@ -41,6 +41,7 @@ import {
   invertHomepagePingTaskBindings,
   resolveDefaultHomepagePingTaskId,
   isHomepageMultiPingConfigured,
+  resolveHomepageMultiPingBaseTaskIds,
 } from "@/utils/pingTasks";
 import type { NodeViewMode } from "@/utils/themeSettings";
 
@@ -376,20 +377,47 @@ export function useAllPingLineOverrides(): PingLineOverridesByNode {
  * 站长存到后端的逐节点换线（`homepagePingLineOverrides`）→ 本机在卡片上换过的行
  * （`pingLineOverrideStore`）。取数（上面的 `useNodePingOverviewLines`）和卡片排行
  * （`useNodeCardModel`）必须共用这一份，否则会出现「行上写着电信、画的是联通」。
- * 条数仍由站点设置决定，只能换、不能加减。
+ *
+ * 条数由站点设置决定（`homepageMultiPingAllLines` 打开时改由这台节点有数据的线路决定），
+ * 换线只能换、不能加减。`PingLineSwitcher` 要算「相对默认换了哪几行」时用
+ * {@link useNodeDefaultMultiPingTaskIds}，别自己再拼一份。
  */
 export function useNodeMultiPingTaskIds(uuid: string): readonly number[] {
-  const { homepageMultiPingTaskIds, homepagePingLineOverrides } = useThemeSettings();
-  const siteOverrides = nodePingLineOverrides(homepagePingLineOverrides, uuid);
+  const nodeDefault = useNodeDefaultMultiPingTaskIds(uuid);
   const localOverrides = useNodePingLineOverrides(uuid);
   return useMemo(
-    () =>
-      resolveNodePingLineTaskIds(
-        resolveNodePingLineTaskIds(homepageMultiPingTaskIds, siteOverrides),
-        localOverrides,
-      ),
-    [homepageMultiPingTaskIds, localOverrides, siteOverrides],
+    () => resolveNodePingLineTaskIds(nodeDefault, localOverrides),
+    [nodeDefault, localOverrides],
   );
+}
+
+/**
+ * 这台节点的「默认线路」：站点设置（或自动全部线路）打底，再叠站长存到后端的逐节点换线 ——
+ * 不含访客本机换的那层。卡片与线路切换菜单共用，两边算出来的行必须一致。
+ */
+export function useNodeDefaultMultiPingTaskIds(uuid: string): readonly number[] {
+  const {
+    homepageMultiPingTaskIds,
+    homepageMultiPingAllLines,
+    homepagePingLineOverrides,
+  } = useThemeSettings();
+  const siteOverrides = nodePingLineOverrides(homepagePingLineOverrides, uuid);
+  // 「自动全部线路」模式按这台节点真正有数据的线路定行数：探测目标只在后端后台配置、公开接口
+  // 不下发，主题只能从样本里认（见 listAvailablePingTaskIds）。没开这个模式时不订阅样本。
+  const availableTaskIds = useAvailablePingTaskIds(uuid, homepageMultiPingAllLines);
+  return useMemo(() => {
+    const baseTaskIds = resolveHomepageMultiPingBaseTaskIds(
+      homepageMultiPingTaskIds,
+      availableTaskIds,
+      homepageMultiPingAllLines,
+    );
+    return resolveNodePingLineTaskIds(baseTaskIds, siteOverrides);
+  }, [
+    availableTaskIds,
+    homepageMultiPingAllLines,
+    homepageMultiPingTaskIds,
+    siteOverrides,
+  ]);
 }
 
 const EMPTY_TASK_IDS: readonly number[] = [];

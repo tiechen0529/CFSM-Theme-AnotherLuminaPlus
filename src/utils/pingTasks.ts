@@ -201,3 +201,22 @@ export function resolveHomepagePingSelections(
       : singleTaskIdsByClient,
   };
 }
+
+/**
+ * 「自动显示全部线路」模式下，这台节点该画哪几行。
+ *
+ * 探测目标（ICMP/TCP、IPv4 还是 IPv6）只在后端后台配置，公开接口不下发，所以主题认不出
+ * 「哪几条是 V6」；能认的只有「这台节点的样本里哪几条有值」（见 usePingOverview 的
+ * listAvailablePingTaskIds）。于是六网 = 六条有数据的线路，不用站长先数好槽位。
+ *
+ * 还没收到样本时退回站点设置的槽位列表：否则首屏会把整块延迟区画成空白，
+ * 等第一份样本回来再换成实际有数据的那些行。
+ */
+export function resolveHomepageMultiPingBaseTaskIds(
+  configuredTaskIds: readonly number[],
+  availableTaskIds: readonly number[],
+  useAllAvailable: boolean,
+): readonly number[] {
+  if (!useAllAvailable || availableTaskIds.length === 0) return configuredTaskIds;
+  return availableTaskIds.slice(0, HOMEPAGE_MULTI_PING_MAX_COUNT);
+}

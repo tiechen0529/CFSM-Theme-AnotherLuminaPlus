@@ -57,6 +57,15 @@ describe("normalizeThemeSettings", () => {
     });
     expect(resolved.enableHomepageMultiPing).toBe(true);
     expect(resolved.homepageMultiPingTaskIds).toEqual([3, 1, 2, 4]);
+    // 自动全部线路是显式开关：没写 = 关，存量站点的三网行数不变。
+    expect(untouched.homepageMultiPingAllLines).toBe(false);
+    expect(
+      normalizeThemeSettings({ homepageMultiPingAllLines: true }).homepageMultiPingAllLines,
+    ).toBe(true);
+    expect(
+      normalizeThemeSettings({ homepageMultiPingAllLines: "yes" } as never)
+        .homepageMultiPingAllLines,
+    ).toBe(false);
   });
 
   it("defaults home sort to weight ascending and falls back to a field's natural direction", () => {

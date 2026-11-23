@@ -66,6 +66,7 @@ export function useNodeCardModel(
     homepagePingBindings,
     enableHomepageMultiPing,
     homepageMultiPingTaskIds,
+    homepageMultiPingAllLines,
     pingLatencyThresholds,
     pingLatencyColors,
     pingLossThresholds,
@@ -80,7 +81,10 @@ export function useNodeCardModel(
     showThreeNetDetails &&
     enableHomepageMultiPing &&
     // 条数不再写死三条：选 1~8 条都算开着，选 0 条才回退单线路。
-    isHomepageMultiPingConfigured(homepageMultiPingTaskIds);
+    // 「自动全部线路」模式不看槽位列表 —— 行数由这台节点实际有数据的线路决定（见
+    // resolveHomepageMultiPingBaseTaskIds），所以槽位列表是空的也照样算开着。
+    (homepageMultiPingAllLines ||
+      isHomepageMultiPingConfigured(homepageMultiPingTaskIds));
   const windowPing = useNodePingOverview(uuid, !multiPingActive);
   const windowPingLines = useNodePingOverviewLines(uuid, multiPingActive);
   // 柱子来自后端窗口，数字用 WS 的实时值补一下 —— 理由见 `withLiveLatency`。
